@@ -1,0 +1,954 @@
+/* =============================================================================
+   CSS CUSTOM PROPERTIES — DARK (default)
+   ============================================================================= */
+
+:root {
+    --bg: #0b0b14;
+    --bg-gradient: radial-gradient(
+        ellipse 80% 50% at 50% -5%,
+        rgba(99, 102, 241, 0.18) 0%,
+        transparent 65%
+    );
+    --surface: rgba(255, 255, 255, 0.05);
+    --surface-hover: rgba(255, 255, 255, 0.09);
+    --surface-active: rgba(255, 255, 255, 0.13);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-focus: rgba(129, 140, 248, 0.5);
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: rgba(226, 232, 240, 0.35);
+    --accent: #818cf8;
+    --accent-rgb: 129, 140, 248;
+    --danger: #f87171;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.3);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --blur: blur(14px);
+}
+
+/* =============================================================================
+   CSS CUSTOM PROPERTIES — LIGHT
+   ============================================================================= */
+
+[data-theme="light"] {
+    --bg: #f1f5f9;
+    --bg-gradient: radial-gradient(
+        ellipse 80% 50% at 50% -5%,
+        rgba(99, 102, 241, 0.1) 0%,
+        transparent 65%
+    );
+    --surface: rgba(255, 255, 255, 0.8);
+    --surface-hover: rgba(255, 255, 255, 0.95);
+    --surface-active: #ffffff;
+    --border: rgba(0, 0, 0, 0.07);
+    --border-focus: rgba(99, 102, 241, 0.4);
+    --text: #1e293b;
+    --text-muted: #94a3b8;
+    --text-dim: rgba(30, 41, 59, 0.35);
+    --accent: #6366f1;
+    --accent-rgb: 99, 102, 241;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+/* =============================================================================
+   BASE & RESET
+   ============================================================================= */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--bg);
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    transition:
+        background-color 0.3s,
+        color 0.3s;
+    overflow-x: hidden;
+    padding: 0 1rem 3rem;
+}
+
+/* Full-viewport gradient overlay */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: var(--bg-gradient);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* =============================================================================
+   TOPBAR
+   ============================================================================= */
+
+header.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    z-index: 100;
+}
+
+.topbar-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* =============================================================================
+   ICON BUTTONS
+   ============================================================================= */
+
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    backdrop-filter: var(--blur);
+    /* font-size for × close characters */
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.icon-btn:hover {
+    background: var(--surface-hover);
+    color: var(--text);
+}
+
+.icon-btn svg {
+    width: 16px;
+    height: 16px;
+    /* prevent SVG from shrinking if button content is mixed */
+    flex-shrink: 0;
+}
+
+/* --- Theme icon visibility -------------------------------------------------- */
+
+/* In dark mode show sun (click → switch to light) */
+[data-theme="dark"] #icon-moon {
+    display: none;
+}
+
+/* In light mode show moon (click → switch to dark) */
+[data-theme="light"] #icon-sun {
+    display: none;
+}
+
+/* =============================================================================
+   WEATHER WIDGET
+   ============================================================================= */
+
+.weather {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    background: var(--surface);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    backdrop-filter: var(--blur);
+    transition: all 0.3s;
+}
+
+/* Hide completely when JS hasn't populated it */
+.weather:empty {
+    display: none;
+}
+
+.weather-emoji {
+    font-size: 1rem;
+}
+
+/* =============================================================================
+   MAIN LAYOUT
+   ============================================================================= */
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 700px;
+    gap: 2.5rem;
+    padding-top: 5rem;
+}
+
+/* =============================================================================
+   CLOCK SECTION
+   ============================================================================= */
+
+.clock-section {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.greeting {
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-weight: 500;
+}
+
+.clock {
+    font-size: clamp(4rem, 12vw, 7rem);
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.date {
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* =============================================================================
+   SEARCH SECTION
+   ============================================================================= */
+
+.search-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
+.search-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 0.4rem 0.4rem 0.4rem 0.6rem;
+    backdrop-filter: var(--blur);
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+}
+
+.search-bar:focus-within {
+    border-color: var(--border-focus);
+    box-shadow:
+        0 0 0 3px rgba(var(--accent-rgb), 0.12),
+        var(--shadow-sm);
+}
+
+/* Engine selector button */
+.engine-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.4rem 0.5rem;
+    border-radius: 40px;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.engine-btn:hover {
+    background: var(--surface-hover);
+    color: var(--text);
+}
+
+/* Coloured engine logo badge */
+.engine-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+/* Dropdown chevron */
+.chevron {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.2s;
+}
+
+.chevron.open {
+    transform: rotate(180deg);
+}
+
+/* Search text input */
+.search-input {
+    flex: 1;
+    border: none;
+    background: none;
+    outline: none;
+    color: var(--text);
+    font-size: 1rem;
+    padding: 0.5rem 0.5rem;
+    min-width: 0;
+    font-family: inherit;
+}
+
+.search-input::placeholder {
+    color: var(--text-dim);
+}
+
+/* Hide browser-native search decorations */
+.search-input::-webkit-search-decoration,
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-results-button,
+.search-input::-webkit-search-results-decoration {
+    display: none;
+}
+
+/* Search submit button */
+.search-submit {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border: none;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    transition: all 0.2s;
+}
+
+.search-submit:hover {
+    filter: brightness(1.15);
+    transform: scale(1.05);
+}
+
+.search-submit svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* =============================================================================
+   ENGINE DROPDOWN
+   ============================================================================= */
+
+.engine-dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.4rem;
+    backdrop-filter: var(--blur);
+    box-shadow: var(--shadow);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 180px;
+    animation: fadeIn 0.15s ease;
+}
+
+.engine-dropdown.hidden {
+    display: none;
+}
+
+.engine-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.15s;
+    border: none;
+    background: none;
+    color: var(--text);
+    font-size: 0.9rem;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+}
+
+.engine-option:hover,
+.engine-option.active {
+    background: var(--surface-hover);
+}
+
+.engine-option.active {
+    color: var(--accent);
+}
+
+/* =============================================================================
+   BOOKMARKS SECTION
+   ============================================================================= */
+
+.bookmarks-section {
+    width: 100%;
+}
+
+.bookmarks-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+/* Shared base for both card types */
+.bookmark-card,
+.bookmark-add-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 0.75rem;
+    min-width: 90px;
+    max-width: 110px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: var(--text);
+    position: relative;
+    backdrop-filter: var(--blur);
+    flex: 1;
+}
+
+.bookmark-card:hover {
+    background: var(--surface-hover);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-sm);
+    border-color: rgba(var(--accent-rgb), 0.2);
+}
+
+/* Favicon image */
+.bookmark-favicon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+/* Coloured letter fallback when favicon fails */
+.bookmark-favicon-fallback {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.bookmark-name {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Per-card edit pencil button (revealed on hover) */
+.bookmark-edit-btn {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--surface-active);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+    color: var(--text-muted);
+}
+
+.bookmark-card:hover .bookmark-edit-btn,
+.bookmark-edit-btn:focus {
+    opacity: 1;
+}
+
+.bookmark-edit-btn svg {
+    width: 10px;
+    height: 10px;
+}
+
+/* "Add" card  */
+.bookmark-add-card {
+    border-style: dashed;
+    color: var(--text-dim);
+}
+
+.bookmark-add-card:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.05);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Plus icon inside add card */
+.bookmark-add-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 300;
+    line-height: 1;
+}
+
+/* =============================================================================
+   MODALS — BACKDROP
+   ============================================================================= */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 1rem;
+    animation: fadeIn 0.15s ease;
+}
+
+.modal-backdrop.hidden {
+    display: none;
+}
+
+/* =============================================================================
+   MODALS — DIALOG
+   ============================================================================= */
+
+.modal {
+    background: #13131f; /* dark default */
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    animation: modalIn 0.2s ease;
+}
+
+[data-theme="light"] .modal {
+    background: #ffffff;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    /* allow scrolling on very short viewports */
+    overflow-y: auto;
+    max-height: calc(100svh - 12rem);
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-footer-right {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* =============================================================================
+   SETTINGS GROUPS
+   ============================================================================= */
+
+.settings-group h3 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 0.75rem;
+}
+
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+}
+
+.setting-row label {
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+/* =============================================================================
+   TOGGLE — pill switch
+   ============================================================================= */
+
+.toggle {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 42px;
+    height: 24px;
+    background: var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    /* Visually separate from label text */
+    margin-left: 0.75rem;
+}
+
+.toggle::before {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.toggle:checked {
+    background: var(--accent);
+}
+
+.toggle:checked::before {
+    transform: translateX(18px);
+}
+
+/* =============================================================================
+   ACCENT PRESETS
+   ============================================================================= */
+
+.accent-presets {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.accent-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    /* strip default button chrome */
+    outline: none;
+}
+
+.accent-dot:hover,
+.accent-dot.active {
+    border-color: #fff;
+    transform: scale(1.15);
+}
+
+[data-theme="light"] .accent-dot:hover,
+[data-theme="light"] .accent-dot.active {
+    border-color: #1e293b;
+}
+
+/* =============================================================================
+   FORM CONTROLS
+   ============================================================================= */
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.form-group label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.form-group input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 0.85rem;
+    color: var(--text);
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.form-group input:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
+}
+
+/* =============================================================================
+   BUTTONS
+   ============================================================================= */
+
+.btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-family: inherit;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-primary:hover {
+    filter: brightness(1.1);
+}
+
+.btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 0.6rem 1.25rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-secondary:hover {
+    background: var(--surface-hover);
+}
+
+.btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    padding: 0.6rem 1.25rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-danger:hover {
+    background: rgba(248, 113, 113, 0.1);
+}
+
+/* Utility: hide anything */
+.hidden {
+    display: none !important;
+}
+
+/* =============================================================================
+   BOOKMARK PREVIEW (inside bookmark modal)
+   ============================================================================= */
+
+.bookmark-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    min-height: 52px;
+}
+
+.bookmark-preview span {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+#bm-favicon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+/* Hide broken/empty favicon placeholder */
+#bm-favicon:not([src]),
+#bm-favicon[src=""] {
+    display: none;
+}
+
+/* =============================================================================
+   COLOR INPUT
+   ============================================================================= */
+
+input[type="color"].color-input {
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 2px;
+    background: none;
+    /* override UA styles */
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+input[type="color"].color-input::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+input[type="color"].color-input::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+}
+
+/* =============================================================================
+   ANIMATIONS
+   ============================================================================= */
+
+@keyframes shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+    20% {
+        transform: translateX(-6px);
+    }
+    40% {
+        transform: translateX(6px);
+    }
+    60% {
+        transform: translateX(-4px);
+    }
+    80% {
+        transform: translateX(4px);
+    }
+}
+
+.shake {
+    animation: shake 0.45s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal {
+    animation: modalIn 0.2s ease;
+}
+
+/* =============================================================================
+   RESPONSIVE — 480 px and below
+   ============================================================================= */
+
+@media (max-width: 480px) {
+    .clock {
+        font-size: clamp(3.5rem, 18vw, 5rem);
+    }
+
+    .bookmarks-grid {
+        gap: 0.5rem;
+    }
+
+    .bookmark-card,
+    .bookmark-add-card {
+        min-width: 75px;
+        padding: 0.75rem 0.5rem;
+    }
+}
