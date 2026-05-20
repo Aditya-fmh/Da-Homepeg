@@ -288,8 +288,35 @@ main {
     color: var(--text);
 }
 
-/* Coloured engine logo badge */
+/* Engine logo — transparent by default; JS sets a coloured circle as fallback */
 .engine-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* fallback letter styling (only visible when favicon fails) */
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: transparent;
+}
+
+/* Favicon <img> used inside .engine-icon and .engine-option-circle */
+.engine-favicon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    border-radius: 3px;
+    display: block;
+    flex-shrink: 0;
+}
+
+/* Coloured circle in the dropdown list — same fallback approach */
+.engine-option-circle {
     width: 22px;
     height: 22px;
     border-radius: 50%;
@@ -300,6 +327,13 @@ main {
     font-weight: 700;
     color: #fff;
     flex-shrink: 0;
+    overflow: hidden;
+    background: transparent;
+}
+
+.engine-option-circle .engine-favicon {
+    width: 16px;
+    height: 16px;
 }
 
 /* Dropdown chevron */

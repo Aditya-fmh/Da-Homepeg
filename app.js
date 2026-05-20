@@ -6,36 +6,42 @@ const ENGINES = {
   ddg: {
     name: "DuckDuckGo",
     url: "https://duckduckgo.com/?q=",
+    favicon: "https://icons.duckduckgo.com/ip3/duckduckgo.com.ico",
     color: "#de5833",
     letter: "D",
   },
   google: {
     name: "Google",
     url: "https://www.google.com/search?q=",
+    favicon: "https://icons.duckduckgo.com/ip3/google.com.ico",
     color: "#4285f4",
     letter: "G",
   },
   bing: {
     name: "Bing",
     url: "https://www.bing.com/search?q=",
+    favicon: "https://icons.duckduckgo.com/ip3/bing.com.ico",
     color: "#0078d7",
     letter: "B",
   },
   brave: {
     name: "Brave",
     url: "https://search.brave.com/search?q=",
+    favicon: "https://icons.duckduckgo.com/ip3/search.brave.com.ico",
     color: "#fb542b",
-    letter: "b",
+    letter: "B",
   },
   ecosia: {
     name: "Ecosia",
     url: "https://www.ecosia.org/search?q=",
+    favicon: "https://icons.duckduckgo.com/ip3/ecosia.org.ico",
     color: "#4a9b5e",
     letter: "E",
   },
   startpage: {
     name: "Startpage",
     url: "https://www.startpage.com/sp/search?q=",
+    favicon: "https://icons.duckduckgo.com/ip3/startpage.com.ico",
     color: "#3c8dbc",
     letter: "S",
   },
@@ -381,8 +387,22 @@ function renderEngineIcon() {
   const iconEl = document.getElementById("engine-icon");
   if (!iconEl || !engine) return;
 
-  iconEl.style.background = engine.color;
-  iconEl.textContent = engine.letter;
+  // Reset to transparent — the image will fill it
+  iconEl.innerHTML = "";
+  iconEl.style.background = "transparent";
+  iconEl.removeAttribute("data-letter");
+
+  const img = document.createElement("img");
+  img.src = engine.favicon;
+  img.alt = engine.name;
+  img.className = "engine-favicon";
+  img.onerror = () => {
+    // Favicon unavailable — fall back to a coloured circle with the initial
+    iconEl.innerHTML = "";
+    iconEl.style.background = engine.color;
+    iconEl.textContent = engine.letter;
+  };
+  iconEl.appendChild(img);
 }
 
 function renderEngineDropdown() {
@@ -397,9 +417,27 @@ function renderEngineDropdown() {
     btn.dataset.engine = key;
     if (key === state.settings.searchEngine) btn.classList.add("active");
 
-    btn.innerHTML =
-      `<span class="engine-option-circle" style="background:${engine.color}">${engine.letter}</span>` +
-      `<span class="engine-option-name">${engine.name}</span>`;
+    // Circle container — shows favicon, falls back to coloured initial
+    const circle = document.createElement("span");
+    circle.className = "engine-option-circle";
+
+    const optImg = document.createElement("img");
+    optImg.src = engine.favicon;
+    optImg.alt = "";
+    optImg.className = "engine-favicon";
+    optImg.onerror = () => {
+      circle.removeChild(optImg);
+      circle.style.background = engine.color;
+      circle.textContent = engine.letter;
+    };
+    circle.appendChild(optImg);
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "engine-option-name";
+    nameSpan.textContent = engine.name;
+
+    btn.appendChild(circle);
+    btn.appendChild(nameSpan);
 
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
