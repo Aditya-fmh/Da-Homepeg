@@ -111,6 +111,16 @@ body::before {
         opacity 0.3s;
 }
 
+/* Solid-colour background mode — user-chosen colour via --bg-override */
+body.has-solid-color {
+    background-color: var(--bg-override, var(--bg));
+}
+
+/* Hide the gradient overlay when a solid colour is active */
+body.has-solid-color::before {
+    display: none;
+}
+
 /* When a custom image is active, replace gradient overlay with a dark veil */
 body.has-bg-image::before {
     background: rgba(0, 0, 0, var(--bg-overlay, 0.5));
@@ -636,6 +646,118 @@ main {
     box-shadow: var(--shadow-sm);
 }
 
+/* =============================================================================
+   BOOKMARK CARD — STYLE VARIANTS  (set via data-bm-style on .bookmarks-grid)
+   ============================================================================= */
+
+/* ── Solid: remove blur; colour from --bm-solid-bg (set by JS) or fallback ── */
+.bookmarks-grid[data-bm-style="solid"] .bookmark-card,
+.bookmarks-grid[data-bm-style="solid"] .bookmark-add-card {
+    background: var(--bm-solid-bg, var(--surface-active));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="light"] .bookmarks-grid[data-bm-style="solid"] .bookmark-card,
+[data-theme="light"] .bookmarks-grid[data-bm-style="solid"] .bookmark-add-card {
+    border-color: rgba(0, 0, 0, 0.08);
+}
+.bookmarks-grid[data-bm-style="solid"] .bookmark-card:hover {
+    filter: brightness(1.1);
+}
+
+/* ── Outline: transparent fill, accent-tinted border ── */
+.bookmarks-grid[data-bm-style="outline"] .bookmark-card,
+.bookmarks-grid[data-bm-style="outline"] .bookmark-add-card {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-color: rgba(var(--accent-rgb), 0.35);
+    box-shadow: none;
+}
+.bookmarks-grid[data-bm-style="outline"] .bookmark-card:hover {
+    background: rgba(var(--accent-rgb), 0.07);
+    border-color: var(--accent);
+    box-shadow: 0 4px 18px rgba(var(--accent-rgb), 0.14);
+}
+.bookmarks-grid[data-bm-style="outline"] .bookmark-add-card:hover {
+    background: rgba(var(--accent-rgb), 0.07);
+}
+
+/* ── Minimal: no card at all — just icon + label floating ── */
+.bookmarks-grid[data-bm-style="minimal"] .bookmark-card {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-color: transparent;
+    box-shadow: none;
+}
+.bookmarks-grid[data-bm-style="minimal"] .bookmark-card:hover {
+    background: var(--surface);
+    border-color: var(--border);
+    box-shadow: var(--shadow-sm);
+}
+.bookmarks-grid[data-bm-style="minimal"] .bookmark-add-card {
+    background: transparent;
+    border-style: dashed;
+    border-color: rgba(var(--accent-rgb), 0.25);
+}
+.bookmarks-grid[data-bm-style="minimal"] .bookmark-add-card:hover {
+    background: rgba(var(--accent-rgb), 0.06);
+    border-color: var(--accent);
+}
+
+/* =============================================================================
+   BOOKMARK CARD — SIZE VARIANTS  (set via data-bm-size on .bookmarks-grid)
+   ============================================================================= */
+
+/* ── Compact ── */
+.bookmarks-grid[data-bm-size="compact"] .bookmark-card,
+.bookmarks-grid[data-bm-size="compact"] .bookmark-add-card {
+    min-width: 68px;
+    max-width: 84px;
+    padding: 0.6rem 0.45rem;
+    gap: 0.3rem;
+    border-radius: var(--radius-sm);
+}
+.bookmarks-grid[data-bm-size="compact"] .bookmark-favicon,
+.bookmarks-grid[data-bm-size="compact"] .bookmark-favicon-fallback {
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+}
+.bookmarks-grid[data-bm-size="compact"] .bookmark-emoji-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 1.1rem;
+}
+.bookmarks-grid[data-bm-size="compact"] .bookmark-name {
+    font-size: 0.68rem;
+}
+
+/* ── Large ── */
+.bookmarks-grid[data-bm-size="large"] .bookmark-card,
+.bookmarks-grid[data-bm-size="large"] .bookmark-add-card {
+    min-width: 108px;
+    max-width: 138px;
+    padding: 1.25rem 1rem;
+    gap: 0.65rem;
+}
+.bookmarks-grid[data-bm-size="large"] .bookmark-favicon,
+.bookmarks-grid[data-bm-size="large"] .bookmark-favicon-fallback {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+}
+.bookmarks-grid[data-bm-size="large"] .bookmark-emoji-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 2rem;
+}
+.bookmarks-grid[data-bm-size="large"] .bookmark-name {
+    font-size: 0.85rem;
+}
+
 /* Plus icon inside add card */
 .bookmark-add-icon {
     width: 32px;
@@ -724,6 +846,187 @@ main {
 .modal-footer-right {
     display: flex;
     gap: 0.5rem;
+}
+
+/* =============================================================================
+   BOOKMARK STYLE PICKER  (inside the Settings modal)
+   ============================================================================= */
+
+/* Small label above a control group (e.g. "Card style") */
+.setting-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+/* 4-column grid of style preview buttons */
+.bm-style-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+
+.bm-style-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.6rem 0.25rem 0.5rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+    color: var(--text-muted);
+}
+
+.bm-style-btn:hover {
+    background: var(--surface-hover);
+    border-color: rgba(var(--accent-rgb), 0.4);
+}
+
+.bm-style-btn.active {
+    border-color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.08);
+    color: var(--accent);
+}
+
+/* The mini card rectangle inside each picker button */
+.bm-style-swatch {
+    width: 38px;
+    height: 26px;
+    border-radius: 6px;
+    position: relative;
+}
+
+/* Glass swatch — same frosted-glass look as the default cards */
+.bm-style-btn[data-style="glass"] .bm-style-swatch {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+/* Solid swatch — more opaque, no blur */
+.bm-style-btn[data-style="solid"] .bm-style-swatch {
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+/* Outline swatch — transparent, border only */
+.bm-style-btn[data-style="outline"] .bm-style-swatch {
+    background: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.32);
+}
+
+/* Minimal swatch — invisible card, three dots hint at floating icons */
+.bm-style-btn[data-style="minimal"] .bm-style-swatch {
+    background: transparent;
+    border: none;
+}
+.bm-style-btn[data-style="minimal"] .bm-style-swatch::after {
+    content: "···";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    line-height: 1;
+}
+
+/* Light-theme swatch overrides */
+[data-theme="light"] .bm-style-btn[data-style="glass"] .bm-style-swatch {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+[data-theme="light"] .bm-style-btn[data-style="solid"] .bm-style-swatch {
+    background: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.15);
+}
+[data-theme="light"] .bm-style-btn[data-style="outline"] .bm-style-swatch {
+    border-color: rgba(0, 0, 0, 0.22);
+}
+
+.bm-style-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+}
+
+/* Vertically centre the new-tab toggle row inside the bookmark modal */
+.bm-modal-row {
+    padding: 0.15rem 0;
+    gap: 0.75rem;
+}
+
+/* =============================================================================
+   BACKGROUND IMAGE — "or" divider + file-upload button
+   ============================================================================= */
+
+.bg-or-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    margin: 0.1rem 0;
+}
+.bg-or-divider::before,
+.bg-or-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+/* Styled <label> that acts as the file-picker button */
+.bg-file-upload {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 0.85rem;
+    background: var(--surface);
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-family: inherit;
+    user-select: none;
+}
+.bg-file-upload:hover {
+    border-color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.05);
+    color: var(--accent);
+}
+.bg-file-upload svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* Filename shown inside the label after a file is loaded */
+#bg-file-name {
+    font-size: 0.74rem;
+    color: var(--accent);
+    margin-left: auto;
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Error message shown when the data URL is too large for localStorage */
+.bg-file-error {
+    font-size: 0.75rem;
+    color: var(--danger);
+    padding: 0.2rem 0;
+}
+.bg-file-error.hidden {
+    display: none;
 }
 
 /* =============================================================================

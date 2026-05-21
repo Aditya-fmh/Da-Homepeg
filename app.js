@@ -78,11 +78,16 @@ const DEFAULT_SETTINGS = {
   weatherUnit: "celsius",
   accentColor: "#818cf8",
   // Background
-  backgroundType: "gradient", // 'gradient' | 'image'
+  backgroundType: "gradient", // 'gradient' | 'color' | 'image'
+  backgroundColor: "#0b0b14", // used when backgroundType === 'color'
   backgroundImage: "", // URL
   backgroundBlur: 4, // px  (0-20)
   backgroundBrightness: 80, // %   (20-100)
   backgroundOverlay: 50, // %   (0-90)
+  // Bookmark cards
+  bookmarkStyle: "glass", // 'glass' | 'solid' | 'outline' | 'minimal'
+  bookmarkSize: "default", // 'compact' | 'default' | 'large'
+  bookmarkSolidColor: "#1c1c2e", // custom fill used when style === 'solid'
 };
 
 let state = {
@@ -190,14 +195,24 @@ function applyBackground() {
   const bgEl = document.getElementById("bg-image");
   const root = document.documentElement;
 
-  if (s.backgroundType === "image" && s.backgroundImage) {
+  // Reset all modes first — re-apply the active one below.
+  if (bgEl) {
+    bgEl.style.display = "none";
+    bgEl.style.backgroundImage = "";
+  }
+  root.style.setProperty("--bg-overlay", "0");
+  document.body.classList.remove("has-bg-image", "has-solid-color");
+
+  if (s.backgroundType === "color" && s.backgroundColor) {
+    // Solid fill — stamp the chosen colour as a CSS variable; a body class activates it.
+    root.style.setProperty("--bg-override", s.backgroundColor);
+    document.body.classList.add("has-solid-color");
+  } else if (s.backgroundType === "image" && s.backgroundImage) {
     if (bgEl) {
-      // Sanitise the URL: strip any embedded quotes to avoid breaking the CSS value
       const safeUrl = s.backgroundImage.replace(/["']/g, "%22");
       bgEl.style.backgroundImage = `url("${safeUrl}")`;
       const blur = s.backgroundBlur ?? 4;
       const brightness = s.backgroundBrightness ?? 80;
-      // blur() + brightness() combined filter on the image element
       bgEl.style.filter = `blur(${blur}px) brightness(${brightness}%)`;
       bgEl.style.display = "block";
     }
@@ -206,13 +221,28 @@ function applyBackground() {
       String((s.backgroundOverlay ?? 50) / 100),
     );
     document.body.classList.add("has-bg-image");
+  }
+  // else: 'gradient' — already cleaned up above, body::before shows the default gradient.
+}
+
+/**
+ * Stamp data-bm-style / data-bm-size onto the grid so CSS variant
+ * selectors pick them up without any class manipulation.
+ */
+function applyBookmarkStyle() {
+  const grid = document.getElementById("bookmarks-grid");
+  if (!grid) return;
+  grid.dataset.bmStyle = state.settings.bookmarkStyle || "glass";
+  grid.dataset.bmSize = state.settings.bookmarkSize || "default";
+  // Expose the custom solid colour as a CSS variable directly on the grid so
+  // the CSS rule can pick it up without needing JS to touch every card.
+  if (
+    (state.settings.bookmarkStyle || "glass") === "solid" &&
+    state.settings.bookmarkSolidColor
+  ) {
+    grid.style.setProperty("--bm-solid-bg", state.settings.bookmarkSolidColor);
   } else {
-    if (bgEl) {
-      bgEl.style.display = "none";
-      bgEl.style.backgroundImage = "";
-    }
-    root.style.setProperty("--bg-overlay", "0");
-    document.body.classList.remove("has-bg-image");
+    grid.style.removeProperty("--bm-solid-bg");
   }
 }
 
@@ -628,8 +658,9 @@ function renderBookmarks() {
     card.className = "bookmark-card";
     card.href = bookmark.url;
     card.setAttribute("role", "listitem");
-    card.setAttribute("target", "_blank");
-    card.setAttribute("rel", "noopener noreferrer");
+    const openNewTab = bookmark.openNewTab !== false; // default true for existing bookmarks
+    card.setAttribute("target", openNewTab ? "_blank" : "_self");
+    if (openNewTab) card.setAttribute("rel", "noopener noreferrer");
     // Used by the drag system to identify this card in the DOM.
     card.dataset.bookmarkId = bookmark.id;
 
@@ -721,6 +752,8 @@ function renderBookmarks() {
     }
   });
   grid.appendChild(addCard);
+  // Apply card-style / size data attributes so CSS selectors take effect.
+  applyBookmarkStyle();
 }
 
 function openAddModal() {
@@ -735,10 +768,12 @@ function openAddModal() {
   const backdrop = document.getElementById("bookmark-backdrop");
 
   const bmIcon = document.getElementById("bm-icon");
+  const bmNewtab = document.getElementById("bm-newtab");
 
   if (bmName) bmName.value = "";
   if (bmUrl) bmUrl.value = "";
   if (bmIcon) bmIcon.value = "";
+  if (bmNewtab) bmNewtab.checked = true; // default: open in new tab
   if (bmTitle) bmTitle.textContent = "Add Bookmark";
   if (btnDelete) btnDelete.classList.add("hidden");
   if (bmFavicon) bmFavicon.src = "";
@@ -764,10 +799,12 @@ function openEditModal(id) {
   const backdrop = document.getElementById("bookmark-backdrop");
 
   const bmIcon = document.getElementById("bm-icon");
+  const bmNewtab = document.getElementById("bm-newtab");
 
   if (bmName) bmName.value = bookmark.name;
   if (bmUrl) bmUrl.value = bookmark.url;
   if (bmIcon) bmIcon.value = bookmark.icon || "";
+  if (bmNewtab) bmNewtab.checked = bookmark.openNewTab !== false;
   if (bmTitle) bmTitle.textContent = "Edit Bookmark";
   if (btnDelete) btnDelete.classList.remove("hidden");
 
@@ -790,11 +827,13 @@ function saveBookmark() {
   const bmName = document.getElementById("bm-name");
   const bmUrl = document.getElementById("bm-url");
   const bmIcon = document.getElementById("bm-icon");
+  const bmNewtab = document.getElementById("bm-newtab");
   if (!bmName || !bmUrl) return;
 
   const name = bmName.value.trim();
   const rawUrl = bmUrl.value.trim();
   const icon = bmIcon ? bmIcon.value.trim() : "";
+  const openNewTab = bmNewtab ? bmNewtab.checked : true;
   let valid = true;
 
   if (!name) {
@@ -817,9 +856,10 @@ function saveBookmark() {
       bookmark.name = name;
       bookmark.url = url;
       bookmark.icon = icon;
+      bookmark.openNewTab = openNewTab;
     }
   } else {
-    state.bookmarks.push({ id: uid(), name, url, icon });
+    state.bookmarks.push({ id: uid(), name, url, icon, openNewTab });
   }
 
   saveState();
@@ -961,13 +1001,58 @@ function initSettings() {
     });
   });
 
-  // Image URL
+  // Solid color picker
+  const bgSolidColorInput = document.getElementById("bg-solid-color");
+  if (bgSolidColorInput) {
+    bgSolidColorInput.addEventListener("input", () => {
+      state.settings.backgroundColor = bgSolidColorInput.value;
+      saveState();
+      applyBackground();
+    });
+  }
+
+  // Image URL  — typing a URL clears any loaded-file indicator
   const bgUrlInput = document.getElementById("bg-url");
   if (bgUrlInput) {
     bgUrlInput.addEventListener("input", () => {
       state.settings.backgroundImage = bgUrlInput.value.trim();
+      const bgFileNameEl = document.getElementById("bg-file-name");
+      if (bgFileNameEl) bgFileNameEl.textContent = "";
       saveState();
       applyBackground();
+    });
+  }
+
+  // Local file upload — converts to data URL, stores in backgroundImage
+  const bgFileInput = document.getElementById("bg-file-input");
+  if (bgFileInput) {
+    bgFileInput.addEventListener("change", () => {
+      const file = bgFileInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        state.settings.backgroundImage = evt.target.result;
+        // Show the filename in the label
+        const bgFileNameEl = document.getElementById("bg-file-name");
+        if (bgFileNameEl) bgFileNameEl.textContent = file.name;
+        // Clear the URL field — file takes precedence
+        if (bgUrlInput) bgUrlInput.value = "";
+        applyBackground();
+        // Persist — may fail if the image is very large
+        try {
+          saveState();
+          const errEl = document.getElementById("bg-file-error");
+          if (errEl) errEl.classList.add("hidden");
+        } catch (_) {
+          const errEl = document.getElementById("bg-file-error");
+          if (errEl) {
+            errEl.textContent =
+              "File too large to save — will reset on reload.";
+            errEl.classList.remove("hidden");
+          }
+        }
+      };
+      reader.readAsDataURL(file);
     });
   }
 
@@ -1007,6 +1092,36 @@ function initSettings() {
       applyBackground();
     });
   }
+
+  // ---- Bookmark card style ----
+  document.querySelectorAll(".bm-style-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.settings.bookmarkStyle = btn.dataset.style;
+      saveState();
+      applyBookmarkStyle();
+      syncBmStyleUI();
+    });
+  });
+
+  // Solid card colour picker
+  const bmSolidColorInput = document.getElementById("bm-solid-color");
+  if (bmSolidColorInput) {
+    bmSolidColorInput.addEventListener("input", () => {
+      state.settings.bookmarkSolidColor = bmSolidColorInput.value;
+      saveState();
+      applyBookmarkStyle();
+    });
+  }
+
+  // ---- Bookmark card size ----
+  document.querySelectorAll(".bm-size-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.settings.bookmarkSize = btn.dataset.size;
+      saveState();
+      applyBookmarkStyle();
+      syncBmStyleUI();
+    });
+  });
 }
 
 function syncSettingsUI() {
@@ -1034,18 +1149,38 @@ function syncSettingsUI() {
   syncAccentDots(s.accentColor);
 
   // Background
-  const isImageMode = s.backgroundType === "image";
+  const bgType = s.backgroundType || "gradient";
 
   const bgGradientBtn = document.getElementById("bg-type-gradient");
+  const bgColorBtn = document.getElementById("bg-type-color");
   const bgImageBtn = document.getElementById("bg-type-image");
-  if (bgGradientBtn) bgGradientBtn.classList.toggle("active", !isImageMode);
-  if (bgImageBtn) bgImageBtn.classList.toggle("active", isImageMode);
+  if (bgGradientBtn)
+    bgGradientBtn.classList.toggle("active", bgType === "gradient");
+  if (bgColorBtn) bgColorBtn.classList.toggle("active", bgType === "color");
+  if (bgImageBtn) bgImageBtn.classList.toggle("active", bgType === "image");
 
+  const bgColorOptions = document.getElementById("bg-color-options");
   const bgImageOptions = document.getElementById("bg-image-options");
-  if (bgImageOptions) bgImageOptions.classList.toggle("hidden", !isImageMode);
+  if (bgColorOptions)
+    bgColorOptions.classList.toggle("hidden", bgType !== "color");
+  if (bgImageOptions)
+    bgImageOptions.classList.toggle("hidden", bgType !== "image");
 
+  const bgSolidColorEl = document.getElementById("bg-solid-color");
+  if (bgSolidColorEl) bgSolidColorEl.value = s.backgroundColor || "#0b0b14";
+
+  // When the saved image is a data URL (from a file), don't pollute the
+  // URL text field with raw base64 — just show the filename indicator.
+  const bgImg = s.backgroundImage || "";
   const bgUrlEl = document.getElementById("bg-url");
-  if (bgUrlEl) bgUrlEl.value = s.backgroundImage || "";
+  const bgFileNameEl = document.getElementById("bg-file-name");
+  if (bgImg.startsWith("data:")) {
+    if (bgUrlEl) bgUrlEl.value = "";
+    if (bgFileNameEl) bgFileNameEl.textContent = "Local file";
+  } else {
+    if (bgUrlEl) bgUrlEl.value = bgImg;
+    if (bgFileNameEl) bgFileNameEl.textContent = "";
+  }
 
   const bgBlurEl = document.getElementById("bg-blur");
   const bgBlurV = document.getElementById("bg-blur-val");
@@ -1064,6 +1199,30 @@ function syncSettingsUI() {
   const overlayVal = s.backgroundOverlay ?? 50;
   if (bgOverlayEl) bgOverlayEl.value = overlayVal;
   if (bgOverlayV) bgOverlayV.textContent = `${overlayVal}%`;
+
+  syncBmStyleUI();
+}
+
+/** Sync bookmark style/size pickers and the conditional solid-colour row. */
+function syncBmStyleUI() {
+  const style = state.settings.bookmarkStyle || "glass";
+  const size = state.settings.bookmarkSize || "default";
+
+  document.querySelectorAll(".bm-style-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.style === style);
+  });
+  document.querySelectorAll(".bm-size-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.size === size);
+  });
+
+  // Show the colour picker only when Solid is the active style
+  const solidColorRow = document.getElementById("bm-solid-color-row");
+  if (solidColorRow)
+    solidColorRow.classList.toggle("hidden", style !== "solid");
+
+  const solidColorInput = document.getElementById("bm-solid-color");
+  if (solidColorInput)
+    solidColorInput.value = state.settings.bookmarkSolidColor || "#1c1c2e";
 }
 
 function syncAccentDots(activeColor) {

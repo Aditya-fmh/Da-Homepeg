@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Startpage</title>
+        <title>Da Homepeg</title>
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
@@ -256,6 +256,13 @@
                                 </button>
                                 <button
                                     class="bg-type-btn"
+                                    id="bg-type-color"
+                                    data-type="color"
+                                >
+                                    Color
+                                </button>
+                                <button
+                                    class="bg-type-btn"
                                     id="bg-type-image"
                                     data-type="image"
                                 >
@@ -263,6 +270,26 @@
                                 </button>
                             </div>
                         </div>
+
+                        <!-- Shown only when type = color -->
+                        <div
+                            id="bg-color-options"
+                            class="bg-image-options hidden"
+                        >
+                            <div class="setting-row">
+                                <label for="bg-solid-color"
+                                    >Background color</label
+                                >
+                                <input
+                                    type="color"
+                                    id="bg-solid-color"
+                                    class="color-input"
+                                    value="#0b0b14"
+                                    aria-label="Background color"
+                                />
+                            </div>
+                        </div>
+
                         <!-- Shown only when type = image -->
                         <div
                             id="bg-image-options"
@@ -276,6 +303,40 @@
                                     placeholder="https://example.com/photo.jpg"
                                 />
                             </div>
+
+                            <div class="bg-or-divider"><span>or</span></div>
+
+                            <!-- Hidden real file input, triggered by the label below -->
+                            <input
+                                type="file"
+                                id="bg-file-input"
+                                accept="image/*"
+                                hidden
+                            />
+                            <label class="bg-file-upload" for="bg-file-input">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path
+                                        d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                                    />
+                                    <polyline points="17 8 12 3 7 8" />
+                                    <line x1="12" y1="3" x2="12" y2="15" />
+                                </svg>
+                                Upload from device
+                                <span id="bg-file-name"></span>
+                            </label>
+                            <p
+                                id="bg-file-error"
+                                class="bg-file-error hidden"
+                            ></p>
+
                             <div class="slider-group">
                                 <div class="slider-row">
                                     <label for="bg-blur">Blur</label>
@@ -328,6 +389,73 @@
                                         >50%</span
                                     >
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bookmarks -->
+                    <div class="settings-group">
+                        <h3>Bookmarks</h3>
+
+                        <!-- Card style -->
+                        <p class="setting-label">Card style</p>
+                        <div class="bm-style-grid">
+                            <button class="bm-style-btn" data-style="glass">
+                                <div class="bm-style-swatch"></div>
+                                <span class="bm-style-label">Glass</span>
+                            </button>
+                            <button class="bm-style-btn" data-style="solid">
+                                <div class="bm-style-swatch"></div>
+                                <span class="bm-style-label">Solid</span>
+                            </button>
+                            <button class="bm-style-btn" data-style="outline">
+                                <div class="bm-style-swatch"></div>
+                                <span class="bm-style-label">Outline</span>
+                            </button>
+                            <button class="bm-style-btn" data-style="minimal">
+                                <div class="bm-style-swatch"></div>
+                                <span class="bm-style-label">None</span>
+                            </button>
+                        </div>
+
+                        <!-- Solid card colour (revealed when Solid style is selected) -->
+                        <div
+                            id="bm-solid-color-row"
+                            class="setting-row hidden"
+                            style="margin-top: 0.5rem"
+                        >
+                            <label for="bm-solid-color">Card color</label>
+                            <input
+                                type="color"
+                                id="bm-solid-color"
+                                class="color-input"
+                                value="#1c1c2e"
+                                aria-label="Solid card background color"
+                            />
+                        </div>
+
+                        <!-- Card size -->
+                        <div class="setting-row" style="margin-top: 0.65rem">
+                            <span>Card size</span>
+                            <div class="bg-type-toggle">
+                                <button
+                                    class="bm-size-btn bg-type-btn"
+                                    data-size="compact"
+                                >
+                                    S
+                                </button>
+                                <button
+                                    class="bm-size-btn bg-type-btn"
+                                    data-size="default"
+                                >
+                                    M
+                                </button>
+                                <button
+                                    class="bm-size-btn bg-type-btn"
+                                    data-size="large"
+                                >
+                                    L
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -420,6 +548,16 @@
                             placeholder="https://example.com"
                         />
                     </div>
+                    <div class="setting-row bm-modal-row">
+                        <label for="bm-newtab">Open in new tab</label>
+                        <input
+                            type="checkbox"
+                            id="bm-newtab"
+                            class="toggle"
+                            checked
+                        />
+                    </div>
+
                     <div class="form-group">
                         <label for="bm-icon"
                             >Icon
