@@ -77,6 +77,12 @@ const DEFAULT_SETTINGS = {
   weatherEnabled: true,
   weatherUnit: "celsius",
   accentColor: "#818cf8",
+  // Background
+  backgroundType: "gradient", // 'gradient' | 'image'
+  backgroundImage: "", // URL
+  backgroundBlur: 4, // px  (0-20)
+  backgroundBrightness: 80, // %   (20-100)
+  backgroundOverlay: 50, // %   (0-90)
 };
 
 let state = {
@@ -84,6 +90,9 @@ let state = {
   bookmarks: [],
   editingBookmarkId: null,
 };
+
+// HTML5 DnD — tracks which bookmark is currently being dragged
+let dragSrcId = null;
 
 // ============================================================
 // State Persistence
@@ -157,6 +166,7 @@ function normalizeUrl(str) {
 function initTheme() {
   document.documentElement.dataset.theme = state.settings.theme;
   applyAccentColor(state.settings.accentColor);
+  applyBackground();
 }
 
 function applyAccentColor(hex) {
@@ -173,6 +183,37 @@ function applyAccentColor(hex) {
     "--border-focus",
     `rgba(${r},${g},${b},0.45)`,
   );
+}
+
+function applyBackground() {
+  const s = state.settings;
+  const bgEl = document.getElementById("bg-image");
+  const root = document.documentElement;
+
+  if (s.backgroundType === "image" && s.backgroundImage) {
+    if (bgEl) {
+      // Sanitise the URL: strip any embedded quotes to avoid breaking the CSS value
+      const safeUrl = s.backgroundImage.replace(/["']/g, "%22");
+      bgEl.style.backgroundImage = `url("${safeUrl}")`;
+      const blur = s.backgroundBlur ?? 4;
+      const brightness = s.backgroundBrightness ?? 80;
+      // blur() + brightness() combined filter on the image element
+      bgEl.style.filter = `blur(${blur}px) brightness(${brightness}%)`;
+      bgEl.style.display = "block";
+    }
+    root.style.setProperty(
+      "--bg-overlay",
+      String((s.backgroundOverlay ?? 50) / 100),
+    );
+    document.body.classList.add("has-bg-image");
+  } else {
+    if (bgEl) {
+      bgEl.style.display = "none";
+      bgEl.style.backgroundImage = "";
+    }
+    root.style.setProperty("--bg-overlay", "0");
+    document.body.classList.remove("has-bg-image");
+  }
 }
 
 function toggleTheme() {
@@ -476,6 +517,80 @@ function submitSearch() {
 // Bookmarks Module
 // ============================================================
 
+/** Build a letter-circle fallback element for a bookmark. */
+function makeFaviconFallback(name) {
+  const div = document.createElement("div");
+  div.className = "bookmark-favicon-fallback";
+  div.style.background = stringToColor(name);
+  div.textContent = (name || "?").charAt(0).toUpperCase();
+  return div;
+}
+
+/**
+ * Wire HTML5 Drag-and-Drop onto a single bookmark card.
+ *
+ * Why NOT pointer events: anchor elements trigger a native "link drag"
+ * which fires dragstart → the browser MUST fire pointercancel immediately
+ * after (per the Pointer Events spec), killing the capture before our
+ * pointermove threshold is ever reached.  The native DnD API has no such
+ * conflict and works reliably on all desktop browsers.
+ */
+function setupBookmarkDrag(card, bookmarkId) {
+  card.setAttribute("draggable", "true");
+
+  // ── dragstart: mark the source, let the browser build its ghost image ──
+  card.addEventListener("dragstart", (e) => {
+    dragSrcId = bookmarkId;
+    e.dataTransfer.effectAllowed = "move";
+    // Some browsers require at least one setData call for DnD to activate.
+    e.dataTransfer.setData("text/plain", bookmarkId);
+    // Use rAF so the ghost is snapped before we fade the original card.
+    requestAnimationFrame(() => card.classList.add("is-dragging"));
+  });
+
+  // ── dragover: live-reorder while the user is hovering ──
+  card.addEventListener("dragover", (e) => {
+    e.preventDefault(); // required: marks this element as a valid drop target
+    if (!dragSrcId || dragSrcId === bookmarkId) return;
+
+    const grid = card.closest(".bookmarks-grid");
+    if (!grid) return;
+    const srcEl = grid.querySelector(`[data-bookmark-id="${dragSrcId}"]`);
+    if (!srcEl) return;
+
+    const addCard = grid.querySelector(".bookmark-add-card");
+    const { left, width } = card.getBoundingClientRect();
+
+    if (e.clientX < left + width / 2) {
+      grid.insertBefore(srcEl, card);
+    } else {
+      const next = card.nextSibling;
+      grid.insertBefore(srcEl, !next || next === addCard ? addCard : next);
+    }
+  });
+
+  // ── dragend: always fires on the *source* card; persist the new order ──
+  card.addEventListener("dragend", () => {
+    card.classList.remove("is-dragging");
+    dragSrcId = null;
+
+    const grid = document.getElementById("bookmarks-grid");
+    if (!grid) return;
+
+    const newOrder = [];
+    grid.querySelectorAll("[data-bookmark-id]").forEach((el) => {
+      const bm = state.bookmarks.find((b) => b.id === el.dataset.bookmarkId);
+      if (bm) newOrder.push(bm);
+    });
+
+    if (newOrder.length === state.bookmarks.length) {
+      state.bookmarks = newOrder;
+      saveState();
+    }
+    renderBookmarks();
+  });
+}
+
 function initBookmarks() {
   renderBookmarks();
 
@@ -515,29 +630,44 @@ function renderBookmarks() {
     card.setAttribute("role", "listitem");
     card.setAttribute("target", "_blank");
     card.setAttribute("rel", "noopener noreferrer");
+    // Used by the drag system to identify this card in the DOM.
+    card.dataset.bookmarkId = bookmark.id;
 
-    // ---- Favicon ----
+    // ---- Icon / Favicon ----
     const faviconWrap = document.createElement("div");
     faviconWrap.className = "bookmark-favicon-container";
 
-    const img = document.createElement("img");
-    img.className = "bookmark-favicon";
-    img.src = getFaviconUrl(bookmark.url);
-    img.alt = "";
+    const customIcon = (bookmark.icon || "").trim();
 
-    const fallback = document.createElement("div");
-    fallback.className = "bookmark-favicon-fallback";
-    fallback.style.background = stringToColor(bookmark.name);
-    fallback.style.display = "none";
-    fallback.textContent = bookmark.name.charAt(0).toUpperCase();
-
-    img.onerror = () => {
-      img.style.display = "none";
-      fallback.style.display = "flex";
-    };
-
-    faviconWrap.appendChild(img);
-    faviconWrap.appendChild(fallback);
+    if (customIcon && /^https?:\/\//i.test(customIcon)) {
+      // Custom image URL
+      const img = document.createElement("img");
+      img.className = "bookmark-favicon";
+      img.src = customIcon;
+      img.alt = "";
+      img.onerror = () => img.replaceWith(makeFaviconFallback(bookmark.name));
+      faviconWrap.appendChild(img);
+    } else if (customIcon) {
+      // Emoji or short text
+      const span = document.createElement("span");
+      span.className = "bookmark-emoji-icon";
+      span.textContent = customIcon;
+      faviconWrap.appendChild(span);
+    } else {
+      // Auto-favicon from the bookmark URL
+      const img = document.createElement("img");
+      img.className = "bookmark-favicon";
+      img.src = getFaviconUrl(bookmark.url);
+      img.alt = "";
+      const fallback = makeFaviconFallback(bookmark.name);
+      fallback.style.display = "none";
+      img.onerror = () => {
+        img.style.display = "none";
+        fallback.style.display = "flex";
+      };
+      faviconWrap.appendChild(img);
+      faviconWrap.appendChild(fallback);
+    }
 
     // ---- Name ----
     const nameSpan = document.createElement("span");
@@ -564,6 +694,8 @@ function renderBookmarks() {
     card.appendChild(faviconWrap);
     card.appendChild(nameSpan);
     card.appendChild(editBtn);
+
+    setupBookmarkDrag(card, bookmark.id);
     grid.appendChild(card);
   });
 
@@ -602,8 +734,11 @@ function openAddModal() {
   const previewName = document.getElementById("bm-preview-name");
   const backdrop = document.getElementById("bookmark-backdrop");
 
+  const bmIcon = document.getElementById("bm-icon");
+
   if (bmName) bmName.value = "";
   if (bmUrl) bmUrl.value = "";
+  if (bmIcon) bmIcon.value = "";
   if (bmTitle) bmTitle.textContent = "Add Bookmark";
   if (btnDelete) btnDelete.classList.add("hidden");
   if (bmFavicon) bmFavicon.src = "";
@@ -628,8 +763,11 @@ function openEditModal(id) {
   const previewName = document.getElementById("bm-preview-name");
   const backdrop = document.getElementById("bookmark-backdrop");
 
+  const bmIcon = document.getElementById("bm-icon");
+
   if (bmName) bmName.value = bookmark.name;
   if (bmUrl) bmUrl.value = bookmark.url;
+  if (bmIcon) bmIcon.value = bookmark.icon || "";
   if (bmTitle) bmTitle.textContent = "Edit Bookmark";
   if (btnDelete) btnDelete.classList.remove("hidden");
 
@@ -651,10 +789,12 @@ function closeBookmarkModal() {
 function saveBookmark() {
   const bmName = document.getElementById("bm-name");
   const bmUrl = document.getElementById("bm-url");
+  const bmIcon = document.getElementById("bm-icon");
   if (!bmName || !bmUrl) return;
 
   const name = bmName.value.trim();
   const rawUrl = bmUrl.value.trim();
+  const icon = bmIcon ? bmIcon.value.trim() : "";
   let valid = true;
 
   if (!name) {
@@ -676,9 +816,10 @@ function saveBookmark() {
     if (bookmark) {
       bookmark.name = name;
       bookmark.url = url;
+      bookmark.icon = icon;
     }
   } else {
-    state.bookmarks.push({ id: uid(), name, url });
+    state.bookmarks.push({ id: uid(), name, url, icon });
   }
 
   saveState();
@@ -807,6 +948,65 @@ function initSettings() {
       syncAccentDots(color);
     });
   });
+
+  // ---- Background settings ----
+
+  // Type toggle (Gradient / Image)
+  document.querySelectorAll(".bg-type-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.settings.backgroundType = btn.dataset.type;
+      saveState();
+      applyBackground();
+      syncSettingsUI();
+    });
+  });
+
+  // Image URL
+  const bgUrlInput = document.getElementById("bg-url");
+  if (bgUrlInput) {
+    bgUrlInput.addEventListener("input", () => {
+      state.settings.backgroundImage = bgUrlInput.value.trim();
+      saveState();
+      applyBackground();
+    });
+  }
+
+  // Blur slider
+  const bgBlurInput = document.getElementById("bg-blur");
+  const bgBlurVal = document.getElementById("bg-blur-val");
+  if (bgBlurInput) {
+    bgBlurInput.addEventListener("input", () => {
+      state.settings.backgroundBlur = Number(bgBlurInput.value);
+      if (bgBlurVal) bgBlurVal.textContent = `${bgBlurInput.value}px`;
+      saveState();
+      applyBackground();
+    });
+  }
+
+  // Brightness slider
+  const bgBrightnessInput = document.getElementById("bg-brightness");
+  const bgBrightnessVal = document.getElementById("bg-brightness-val");
+  if (bgBrightnessInput) {
+    bgBrightnessInput.addEventListener("input", () => {
+      state.settings.backgroundBrightness = Number(bgBrightnessInput.value);
+      if (bgBrightnessVal)
+        bgBrightnessVal.textContent = `${bgBrightnessInput.value}%`;
+      saveState();
+      applyBackground();
+    });
+  }
+
+  // Overlay slider
+  const bgOverlayInput = document.getElementById("bg-overlay");
+  const bgOverlayVal = document.getElementById("bg-overlay-val");
+  if (bgOverlayInput) {
+    bgOverlayInput.addEventListener("input", () => {
+      state.settings.backgroundOverlay = Number(bgOverlayInput.value);
+      if (bgOverlayVal) bgOverlayVal.textContent = `${bgOverlayInput.value}%`;
+      saveState();
+      applyBackground();
+    });
+  }
 }
 
 function syncSettingsUI() {
@@ -832,6 +1032,38 @@ function syncSettingsUI() {
   if (settingAccent) settingAccent.value = s.accentColor;
 
   syncAccentDots(s.accentColor);
+
+  // Background
+  const isImageMode = s.backgroundType === "image";
+
+  const bgGradientBtn = document.getElementById("bg-type-gradient");
+  const bgImageBtn = document.getElementById("bg-type-image");
+  if (bgGradientBtn) bgGradientBtn.classList.toggle("active", !isImageMode);
+  if (bgImageBtn) bgImageBtn.classList.toggle("active", isImageMode);
+
+  const bgImageOptions = document.getElementById("bg-image-options");
+  if (bgImageOptions) bgImageOptions.classList.toggle("hidden", !isImageMode);
+
+  const bgUrlEl = document.getElementById("bg-url");
+  if (bgUrlEl) bgUrlEl.value = s.backgroundImage || "";
+
+  const bgBlurEl = document.getElementById("bg-blur");
+  const bgBlurV = document.getElementById("bg-blur-val");
+  const blurVal = s.backgroundBlur ?? 4;
+  if (bgBlurEl) bgBlurEl.value = blurVal;
+  if (bgBlurV) bgBlurV.textContent = `${blurVal}px`;
+
+  const bgBrightEl = document.getElementById("bg-brightness");
+  const bgBrightV = document.getElementById("bg-brightness-val");
+  const brightVal = s.backgroundBrightness ?? 80;
+  if (bgBrightEl) bgBrightEl.value = brightVal;
+  if (bgBrightV) bgBrightV.textContent = `${brightVal}%`;
+
+  const bgOverlayEl = document.getElementById("bg-overlay");
+  const bgOverlayV = document.getElementById("bg-overlay-val");
+  const overlayVal = s.backgroundOverlay ?? 50;
+  if (bgOverlayEl) bgOverlayEl.value = overlayVal;
+  if (bgOverlayV) bgOverlayV.textContent = `${overlayVal}%`;
 }
 
 function syncAccentDots(activeColor) {

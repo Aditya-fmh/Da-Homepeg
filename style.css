@@ -25,6 +25,7 @@
     --radius: 16px;
     --radius-sm: 10px;
     --blur: blur(14px);
+    --bg-overlay: 0;
 }
 
 /* =============================================================================
@@ -88,6 +89,41 @@ body::before {
     background: var(--bg-gradient);
     pointer-events: none;
     z-index: -1;
+}
+
+/* =============================================================================
+   BACKGROUND IMAGE LAYER
+   ============================================================================= */
+
+/* The actual image element — sits behind body::before (z-index -1) */
+.bg-image {
+    position: fixed;
+    /* extend 30 px on every side so blurred edges never show */
+    inset: -30px;
+    z-index: -2;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: none; /* shown by JS when type = 'image' */
+    will-change: filter;
+    transition:
+        filter 0.3s,
+        opacity 0.3s;
+}
+
+/* When a custom image is active, replace gradient overlay with a dark veil */
+body.has-bg-image::before {
+    background: rgba(0, 0, 0, var(--bg-overlay, 0.5));
+    transition: background 0.3s;
+}
+
+/* Slightly raise surface opacity for readability over a busy photo */
+body.has-bg-image .search-bar,
+body.has-bg-image .bookmark-card,
+body.has-bg-image .bookmark-add-card,
+body.has-bg-image .weather,
+body.has-bg-image .modal {
+    backdrop-filter: blur(20px) saturate(1.4);
 }
 
 /* =============================================================================
@@ -488,11 +524,40 @@ main {
     flex: 1;
 }
 
+/* Bookmark cards are draggable — show the grab cursor */
+.bookmark-card {
+    cursor: grab;
+    /* Prevent text selection during a drag gesture */
+    -webkit-user-select: none;
+    user-select: none;
+}
+
 .bookmark-card:hover {
     background: var(--surface-hover);
     transform: translateY(-3px);
     box-shadow: var(--shadow-sm);
     border-color: rgba(var(--accent-rgb), 0.2);
+}
+
+/* Card being actively dragged — the browser shows its own ghost;
+   we fade the original in place so the user knows where it came from */
+.bookmark-card.is-dragging {
+    opacity: 0.3;
+    /* A subtle outline so the empty slot is still visible */
+    outline: 2px dashed rgba(var(--accent-rgb), 0.5);
+    outline-offset: -2px;
+}
+
+/* Emoji / short-text custom icon */
+.bookmark-emoji-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
 /* Favicon image */
@@ -662,6 +727,121 @@ main {
 }
 
 /* =============================================================================
+   RANGE SLIDERS  (used in Background settings)
+   ============================================================================= */
+
+.slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.slider-row {
+    display: grid;
+    grid-template-columns: 76px 1fr 38px;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.slider-row label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    cursor: default;
+}
+
+.slider-value {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+    transition: transform 0.15s;
+}
+
+.slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+    transition: transform 0.15s;
+}
+
+.slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* =============================================================================
+   BACKGROUND TYPE SEGMENTED CONTROL
+   ============================================================================= */
+
+.bg-type-toggle {
+    display: flex;
+    gap: 2px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+}
+
+.bg-type-btn {
+    flex: 1;
+    padding: 0.3rem 0.6rem;
+    border: none;
+    border-radius: calc(var(--radius-sm) - 3px);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.bg-type-btn.active {
+    background: var(--accent);
+    color: #fff;
+}
+
+/* Image-specific options panel */
+.bg-image-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+}
+
+/* =============================================================================
    SETTINGS GROUPS
    ============================================================================= */
 
@@ -773,6 +953,14 @@ main {
     font-size: 0.8rem;
     color: var(--text-muted);
     font-weight: 500;
+}
+
+/* Small muted label suffix (e.g. "optional · emoji or URL") */
+.form-hint {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    font-weight: 400;
+    margin-left: 0.25rem;
 }
 
 .form-group input {

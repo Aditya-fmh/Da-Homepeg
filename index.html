@@ -1,49 +1,81 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="dark">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Startpage</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Startpage</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <!-- Background image layer (sits behind everything via z-index: -2) -->
+        <div id="bg-image" class="bg-image"></div>
 
-  <!-- ===== TOPBAR ===== -->
-  <header class="topbar">
-    <div id="weather-widget" class="weather"></div>
-    <div class="topbar-actions">
+        <!-- ===== TOPBAR ===== -->
+        <header class="topbar">
+            <div id="weather-widget" class="weather"></div>
+            <div class="topbar-actions">
+                <!-- Theme toggle -->
+                <button
+                    id="btn-theme"
+                    class="icon-btn"
+                    aria-label="Toggle theme"
+                >
+                    <!-- Sun (shown in dark mode) -->
+                    <svg
+                        id="icon-sun"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <circle cx="12" cy="12" r="5" />
+                        <line x1="12" y1="1" x2="12" y2="3" />
+                        <line x1="12" y1="21" x2="12" y2="23" />
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                        <line x1="1" y1="12" x2="3" y2="12" />
+                        <line x1="21" y1="12" x2="23" y2="12" />
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                    </svg>
+                    <!-- Moon (shown in light mode) -->
+                    <svg
+                        id="icon-moon"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path
+                            d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+                        />
+                    </svg>
+                </button>
 
-      <!-- Theme toggle -->
-      <button id="btn-theme" class="icon-btn" aria-label="Toggle theme">
-        <!-- Sun (shown in dark mode) -->
-        <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="5"/>
-          <line x1="12" y1="1"  x2="12" y2="3"/>
-          <line x1="12" y1="21" x2="12" y2="23"/>
-          <line x1="4.22"  y1="4.22"  x2="5.64"  y2="5.64"/>
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-          <line x1="1"  y1="12" x2="3"  y2="12"/>
-          <line x1="21" y1="12" x2="23" y2="12"/>
-          <line x1="4.22"  y1="19.78" x2="5.64"  y2="18.36"/>
-          <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>
-        </svg>
-        <!-- Moon (shown in light mode) -->
-        <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-      </button>
-
-      <!-- Settings -->
-      <button id="btn-settings" class="icon-btn" aria-label="Settings">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06
+                <!-- Settings -->
+                <button
+                    id="btn-settings"
+                    class="icon-btn"
+                    aria-label="Settings"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06
                    a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09
                    A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06
                    a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15
@@ -52,173 +84,378 @@
                    A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09
                    a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06
                    a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9
-                   a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
-      </button>
+                   a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+                        />
+                    </svg>
+                </button>
+            </div>
+        </header>
 
-    </div>
-  </header>
+        <!-- ===== MAIN ===== -->
+        <main>
+            <!-- Clock Section -->
+            <section class="clock-section">
+                <p id="greeting" class="greeting"></p>
+                <time id="clock" class="clock"></time>
+                <p id="date" class="date"></p>
+            </section>
 
-  <!-- ===== MAIN ===== -->
-  <main>
+            <!-- Search Section -->
+            <section class="search-section">
+                <div class="search-bar">
+                    <!-- Engine selector -->
+                    <button
+                        id="engine-btn"
+                        class="engine-btn"
+                        aria-label="Select search engine"
+                        aria-expanded="false"
+                    >
+                        <span id="engine-icon" class="engine-icon"></span>
+                        <svg
+                            class="chevron"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                    </button>
 
-    <!-- Clock Section -->
-    <section class="clock-section">
-      <p id="greeting" class="greeting"></p>
-      <time id="clock" class="clock"></time>
-      <p id="date" class="date"></p>
-    </section>
+                    <input
+                        type="search"
+                        id="search-input"
+                        class="search-input"
+                        placeholder="Search the web…"
+                        autocomplete="off"
+                    />
 
-    <!-- Search Section -->
-    <section class="search-section">
-      <div class="search-bar">
+                    <!-- Submit -->
+                    <button
+                        id="search-submit"
+                        class="search-submit"
+                        aria-label="Search"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                    </button>
+                </div>
 
-        <!-- Engine selector -->
-        <button id="engine-btn" class="engine-btn"
-                aria-label="Select search engine" aria-expanded="false">
-          <span id="engine-icon" class="engine-icon"></span>
-          <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2.5"
-               stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        </button>
+                <!-- Engine dropdown -->
+                <div class="engine-dropdown hidden" id="engine-dropdown"></div>
+            </section>
 
-        <input type="search" id="search-input" class="search-input"
-               placeholder="Search the web…" autocomplete="off" />
+            <!-- Bookmarks Section -->
+            <section class="bookmarks-section">
+                <div id="bookmarks-grid" class="bookmarks-grid"></div>
+            </section>
+        </main>
 
-        <!-- Submit -->
-        <button id="search-submit" class="search-submit" aria-label="Search">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2.5"
-               stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-        </button>
-      </div>
+        <!-- ===== SETTINGS MODAL ===== -->
+        <div class="modal-backdrop hidden" id="settings-backdrop">
+            <div
+                class="modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="settings-heading"
+            >
+                <div class="modal-header">
+                    <h2 id="settings-heading">Settings</h2>
+                    <button
+                        id="btn-close-settings"
+                        class="icon-btn"
+                        aria-label="Close settings"
+                    >
+                        &times;
+                    </button>
+                </div>
 
-      <!-- Engine dropdown -->
-      <div class="engine-dropdown hidden" id="engine-dropdown"></div>
-    </section>
+                <div class="modal-body">
+                    <!-- Clock -->
+                    <div class="settings-group">
+                        <h3>Clock</h3>
+                        <div class="setting-row">
+                            <label for="setting-24h">24-hour format</label>
+                            <input
+                                type="checkbox"
+                                id="setting-24h"
+                                class="toggle"
+                            />
+                        </div>
+                        <div class="setting-row">
+                            <label for="setting-seconds">Show seconds</label>
+                            <input
+                                type="checkbox"
+                                id="setting-seconds"
+                                class="toggle"
+                            />
+                        </div>
+                    </div>
 
-    <!-- Bookmarks Section -->
-    <section class="bookmarks-section">
-      <div id="bookmarks-grid" class="bookmarks-grid"></div>
-    </section>
+                    <!-- Search -->
+                    <div class="settings-group">
+                        <h3>Search</h3>
+                        <div class="setting-row">
+                            <label for="setting-newtab">Open in new tab</label>
+                            <input
+                                type="checkbox"
+                                id="setting-newtab"
+                                class="toggle"
+                            />
+                        </div>
+                    </div>
 
-  </main>
+                    <!-- Weather -->
+                    <div class="settings-group">
+                        <h3>Weather</h3>
+                        <div class="setting-row">
+                            <label for="setting-weather">Enable weather</label>
+                            <input
+                                type="checkbox"
+                                id="setting-weather"
+                                class="toggle"
+                            />
+                        </div>
+                        <div class="setting-row">
+                            <label for="setting-fahrenheit"
+                                >Use Fahrenheit</label
+                            >
+                            <input
+                                type="checkbox"
+                                id="setting-fahrenheit"
+                                class="toggle"
+                            />
+                        </div>
+                    </div>
 
-  <!-- ===== SETTINGS MODAL ===== -->
-  <div class="modal-backdrop hidden" id="settings-backdrop">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settings-heading">
+                    <!-- Background -->
+                    <div class="settings-group">
+                        <h3>Background</h3>
+                        <div class="setting-row">
+                            <span>Type</span>
+                            <div class="bg-type-toggle">
+                                <button
+                                    class="bg-type-btn active"
+                                    id="bg-type-gradient"
+                                    data-type="gradient"
+                                >
+                                    Gradient
+                                </button>
+                                <button
+                                    class="bg-type-btn"
+                                    id="bg-type-image"
+                                    data-type="image"
+                                >
+                                    Image
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Shown only when type = image -->
+                        <div
+                            id="bg-image-options"
+                            class="bg-image-options hidden"
+                        >
+                            <div class="form-group">
+                                <label for="bg-url">Image URL</label>
+                                <input
+                                    type="url"
+                                    id="bg-url"
+                                    placeholder="https://example.com/photo.jpg"
+                                />
+                            </div>
+                            <div class="slider-group">
+                                <div class="slider-row">
+                                    <label for="bg-blur">Blur</label>
+                                    <input
+                                        type="range"
+                                        id="bg-blur"
+                                        class="slider"
+                                        min="0"
+                                        max="20"
+                                        step="1"
+                                        value="4"
+                                    />
+                                    <span class="slider-value" id="bg-blur-val"
+                                        >4px</span
+                                    >
+                                </div>
+                                <div class="slider-row">
+                                    <label for="bg-brightness"
+                                        >Brightness</label
+                                    >
+                                    <input
+                                        type="range"
+                                        id="bg-brightness"
+                                        class="slider"
+                                        min="20"
+                                        max="100"
+                                        step="5"
+                                        value="80"
+                                    />
+                                    <span
+                                        class="slider-value"
+                                        id="bg-brightness-val"
+                                        >80%</span
+                                    >
+                                </div>
+                                <div class="slider-row">
+                                    <label for="bg-overlay">Overlay</label>
+                                    <input
+                                        type="range"
+                                        id="bg-overlay"
+                                        class="slider"
+                                        min="0"
+                                        max="90"
+                                        step="5"
+                                        value="50"
+                                    />
+                                    <span
+                                        class="slider-value"
+                                        id="bg-overlay-val"
+                                        >50%</span
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-      <div class="modal-header">
-        <h2 id="settings-heading">Settings</h2>
-        <button id="btn-close-settings" class="icon-btn" aria-label="Close settings">
-          &times;
-        </button>
-      </div>
-
-      <div class="modal-body">
-
-        <!-- Clock -->
-        <div class="settings-group">
-          <h3>Clock</h3>
-          <div class="setting-row">
-            <label for="setting-24h">24-hour format</label>
-            <input type="checkbox" id="setting-24h" class="toggle" />
-          </div>
-          <div class="setting-row">
-            <label for="setting-seconds">Show seconds</label>
-            <input type="checkbox" id="setting-seconds" class="toggle" />
-          </div>
+                    <!-- Appearance -->
+                    <div class="settings-group">
+                        <h3>Appearance</h3>
+                        <div class="accent-presets">
+                            <button
+                                class="accent-dot"
+                                data-color="#818cf8"
+                                style="background: #818cf8"
+                                aria-label="Indigo accent"
+                            ></button>
+                            <button
+                                class="accent-dot"
+                                data-color="#a78bfa"
+                                style="background: #a78bfa"
+                                aria-label="Purple accent"
+                            ></button>
+                            <button
+                                class="accent-dot"
+                                data-color="#60a5fa"
+                                style="background: #60a5fa"
+                                aria-label="Blue accent"
+                            ></button>
+                            <button
+                                class="accent-dot"
+                                data-color="#34d399"
+                                style="background: #34d399"
+                                aria-label="Green accent"
+                            ></button>
+                            <button
+                                class="accent-dot"
+                                data-color="#f472b6"
+                                style="background: #f472b6"
+                                aria-label="Pink accent"
+                            ></button>
+                            <button
+                                class="accent-dot"
+                                data-color="#fb923c"
+                                style="background: #fb923c"
+                                aria-label="Orange accent"
+                            ></button>
+                            <input
+                                type="color"
+                                id="setting-accent"
+                                class="color-input"
+                                aria-label="Custom accent color"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Search -->
-        <div class="settings-group">
-          <h3>Search</h3>
-          <div class="setting-row">
-            <label for="setting-newtab">Open in new tab</label>
-            <input type="checkbox" id="setting-newtab" class="toggle" />
-          </div>
+        <!-- ===== BOOKMARK MODAL ===== -->
+        <div class="modal-backdrop hidden" id="bookmark-backdrop">
+            <div
+                class="modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="bookmark-title"
+            >
+                <div class="modal-header">
+                    <h2 id="bookmark-title">Add Bookmark</h2>
+                    <button
+                        id="btn-close-bookmark"
+                        class="icon-btn"
+                        aria-label="Close bookmark modal"
+                    >
+                        &times;
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="bm-name">Name</label>
+                        <input
+                            type="text"
+                            id="bm-name"
+                            placeholder="My Bookmark"
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="bm-url">URL</label>
+                        <input
+                            type="url"
+                            id="bm-url"
+                            placeholder="https://example.com"
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="bm-icon"
+                            >Icon
+                            <span class="form-hint"
+                                >optional &middot; emoji or image URL</span
+                            ></label
+                        >
+                        <input
+                            type="text"
+                            id="bm-icon"
+                            placeholder="🚀  or  https://example.com/icon.png"
+                            autocomplete="off"
+                        />
+                    </div>
+                    <div class="bookmark-preview" id="bm-preview">
+                        <img id="bm-favicon" src="" alt="Favicon" />
+                        <span id="bm-preview-name"></span>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn-danger hidden" id="btn-delete-bookmark">
+                        Delete
+                    </button>
+                    <div class="modal-footer-right">
+                        <button class="btn-secondary" id="btn-cancel-bookmark">
+                            Cancel
+                        </button>
+                        <button class="btn-primary" id="btn-save-bookmark">
+                            Save
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Weather -->
-        <div class="settings-group">
-          <h3>Weather</h3>
-          <div class="setting-row">
-            <label for="setting-weather">Enable weather</label>
-            <input type="checkbox" id="setting-weather" class="toggle" />
-          </div>
-          <div class="setting-row">
-            <label for="setting-fahrenheit">Use Fahrenheit</label>
-            <input type="checkbox" id="setting-fahrenheit" class="toggle" />
-          </div>
-        </div>
-
-        <!-- Appearance -->
-        <div class="settings-group">
-          <h3>Appearance</h3>
-          <div class="accent-presets">
-            <button class="accent-dot" data-color="#818cf8"
-                    style="background:#818cf8" aria-label="Indigo accent"></button>
-            <button class="accent-dot" data-color="#a78bfa"
-                    style="background:#a78bfa" aria-label="Purple accent"></button>
-            <button class="accent-dot" data-color="#60a5fa"
-                    style="background:#60a5fa" aria-label="Blue accent"></button>
-            <button class="accent-dot" data-color="#34d399"
-                    style="background:#34d399" aria-label="Green accent"></button>
-            <button class="accent-dot" data-color="#f472b6"
-                    style="background:#f472b6" aria-label="Pink accent"></button>
-            <button class="accent-dot" data-color="#fb923c"
-                    style="background:#fb923c" aria-label="Orange accent"></button>
-            <input type="color" id="setting-accent" class="color-input"
-                   aria-label="Custom accent color" />
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== BOOKMARK MODAL ===== -->
-  <div class="modal-backdrop hidden" id="bookmark-backdrop">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="bookmark-title">
-
-      <div class="modal-header">
-        <h2 id="bookmark-title">Add Bookmark</h2>
-        <button id="btn-close-bookmark" class="icon-btn" aria-label="Close bookmark modal">
-          &times;
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="bm-name">Name</label>
-          <input type="text" id="bm-name" placeholder="My Bookmark" />
-        </div>
-        <div class="form-group">
-          <label for="bm-url">URL</label>
-          <input type="url" id="bm-url" placeholder="https://example.com" />
-        </div>
-        <div class="bookmark-preview" id="bm-preview">
-          <img id="bm-favicon" src="" alt="Favicon" />
-          <span id="bm-preview-name"></span>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn-danger hidden" id="btn-delete-bookmark">Delete</button>
-        <div class="modal-footer-right">
-          <button class="btn-secondary" id="btn-cancel-bookmark">Cancel</button>
-          <button class="btn-primary"   id="btn-save-bookmark">Save</button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <script src="app.js"></script>
-</body>
+        <script src="app.js"></script>
+    </body>
 </html>
