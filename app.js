@@ -259,6 +259,13 @@ function toggleTheme() {
 function initClock() {
   updateClock();
   setInterval(updateClock, 1000);
+
+  // Browsers throttle / suspend setInterval in background tabs.
+  // Re-sync the moment the user returns to this tab so the greeting
+  // and time are never stale.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) updateClock();
+  });
 }
 
 function updateClock() {
@@ -720,9 +727,15 @@ function renderBookmarks() {
       openEditModal(bookmark.id);
     });
 
-    card.appendChild(faviconWrap);
+    // Visual card box: favicon + edit button inside the bordered square
+    const cardInner = document.createElement("div");
+    cardInner.className = "bookmark-card-inner";
+    cardInner.appendChild(faviconWrap);
+    cardInner.appendChild(editBtn);
+
+    // Name label sits OUTSIDE the box, below it
+    card.appendChild(cardInner);
     card.appendChild(nameSpan);
-    card.appendChild(editBtn);
 
     setupBookmarkDrag(card, bookmark.id);
     grid.appendChild(card);
