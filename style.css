@@ -505,6 +505,35 @@ main {
     width: 100%;
 }
 
+/* Subtle "right-click" hint that fades in when hovering the bookmarks area */
+.bookmarks-section::after {
+    content: "Right-click to add a bookmark";
+    display: block;
+    text-align: center;
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+    color: var(--text-dim);
+    margin-top: 0.9rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.bookmarks-section:hover::after {
+    opacity: 1;
+}
+
+/* Empty-state message when all bookmarks have been deleted */
+.bookmarks-grid:empty::before {
+    content: "Right-click anywhere to add your first bookmark";
+    display: block;
+    width: 100%;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    padding: 1.5rem 0;
+    pointer-events: none;
+}
+
 .bookmarks-grid {
     display: flex;
     flex-wrap: wrap;
@@ -632,12 +661,11 @@ main {
     height: 10px;
 }
 
-/* "Add" card  */
+/* “Add” card — kept for potential future use; currently not rendered */
 .bookmark-add-card {
     border-style: dashed;
     color: var(--text-dim);
 }
-
 .bookmark-add-card:hover {
     color: var(--accent);
     border-color: var(--accent);

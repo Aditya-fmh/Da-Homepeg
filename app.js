@@ -588,14 +588,12 @@ function setupBookmarkDrag(card, bookmarkId) {
     const srcEl = grid.querySelector(`[data-bookmark-id="${dragSrcId}"]`);
     if (!srcEl) return;
 
-    const addCard = grid.querySelector(".bookmark-add-card");
     const { left, width } = card.getBoundingClientRect();
-
     if (e.clientX < left + width / 2) {
       grid.insertBefore(srcEl, card);
     } else {
-      const next = card.nextSibling;
-      grid.insertBefore(srcEl, !next || next === addCard ? addCard : next);
+      // insertBefore(el, null) appends to end — correct for the last slot
+      grid.insertBefore(srcEl, card.nextSibling);
     }
   });
 
@@ -730,28 +728,6 @@ function renderBookmarks() {
     grid.appendChild(card);
   });
 
-  // ---- Add card ----
-  const addCard = document.createElement("div");
-  addCard.className = "bookmark-card bookmark-add-card";
-  addCard.setAttribute("role", "button");
-  addCard.setAttribute("tabindex", "0");
-  addCard.setAttribute("aria-label", "Add bookmark");
-  addCard.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-         viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="12" y1="5" x2="12" y2="19"/>
-      <line x1="5"  y1="12" x2="19" y2="12"/>
-    </svg>
-    <span>Add</span>`;
-  addCard.addEventListener("click", openAddModal);
-  addCard.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      openAddModal();
-    }
-  });
-  grid.appendChild(addCard);
   // Apply card-style / size data attributes so CSS selectors take effect.
   applyBookmarkStyle();
 }
@@ -1325,4 +1301,22 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.target === bookmarkBackdrop) closeBookmarkModal();
     });
   }
+
+  // ---- Right-click on page background → add bookmark form ----
+  // Interactive elements (links, buttons, inputs …) keep their native context menu.
+  document.addEventListener("contextmenu", (e) => {
+    if (
+      e.target.closest(
+        "a, button, input, textarea, select, header, .modal-backdrop, .engine-dropdown",
+      )
+    )
+      return;
+
+    // Don’t reset the form if the modal is already open
+    const bmBackdrop = document.getElementById("bookmark-backdrop");
+    if (bmBackdrop && !bmBackdrop.classList.contains("hidden")) return;
+
+    e.preventDefault();
+    openAddModal();
+  });
 });
